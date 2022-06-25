@@ -22,6 +22,8 @@ int main() {
     addNodo(&lista , 20);
     addNodo(&lista, 35);
     
+    printf("\n\tLa media è: %f" , calcolaMedia(lista));
+
 }
 
 void addNodo(TipoLista *l , int val_info) {
@@ -42,7 +44,10 @@ void addNodo(TipoLista *l , int val_info) {
 void insDati(TipoLista l, int *som , int *numNodi) {
     if (l) {
         *som += l->info; /* a somma viene aggiunto il valore contenuto all'interno di l->info */ 
+        *numNodi += 1;
+        insDati(l->next , som , numNodi); /* passa ricorsivamente il nodo successivo */
     }
+    return ;
 }
 
 float calcolaMedia(TipoLista l) {
