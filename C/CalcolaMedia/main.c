@@ -44,17 +44,17 @@ void addNodo(TipoLista *l , int val_info) {
 void insDati(TipoLista l, int *som , int *numNodi) {
     if (l) {
         *som += l->info; /* a somma viene aggiunto il valore contenuto all'interno di l->info */ 
-        *numNodi += 1;
-        insDati(l->next , som , numNodi); /* passa ricorsivamente il nodo successivo */
+        *numNodi += 1; /* conta il numero di nodi */
+        insDati(l->next , som , numNodi); /* acquisisce i dati del nodo successivo */
     }
     return ;
 }
 
 float calcolaMedia(TipoLista l) {
 
-    int somma = 0 , numNodi = 0;
+    int somma = 0 , numNodi = 0; /* numNodi -> numero totale di nodi presenti in lista */
 
-    insDati(l, &somma, &numNodi);
+    insDati(l, &somma, &numNodi); /* assegna tramite indirizzo la somma dei valori contenuti nei nodi e quanti sono quest'ultimi */
 
     if (numNodi) {
         return (float) somma/numNodi;
