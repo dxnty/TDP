@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct TipoPunto {
-    char colore[10];
+    char colore[15];
     int valX; /* valX -> il valore dell'ascissa in cui si trova il punto  */
     int valY; /* valY -> il valore delle ordinate in cui si trova il punto */
 };
@@ -16,10 +17,11 @@ typedef struct TipoNodo * TipoLista;
 
 void buildFromFile(TipoLista * , char *); /* consente di formare la lista con i dati caricati dal file */
 void stampaLista(TipoLista); /* stampa tutti gli elementi della lista */
-void maxAscissa(TipoLista); /* trova il valore massimo della x fra tutta la lista */
+void maxAscissa(TipoLista , int *); /* trova il valore massimo della x fra tutta la lista */
 void readFromFile(FILE * , TipoElem *); /* prende gli elementi dal file e li trasferisce nella lista */
 void addElemToLista(TipoLista * , TipoElem); /* aggiunge gli elementi alla lista */
-
+void scriviOnFile(TipoLista , char *); /* consente di scrivere sul file tutti gli elementi presenti in lista */
+void addNodo(TipoLista *); /* aggiunge un nodo, consenste di fare un test di scrittura */
 
 int main() {
     /* ~~ TipoLista || TipoNodo * ~~ */
@@ -28,22 +30,51 @@ int main() {
     char nomeFile[30];
     /* int */
     int puntoMaxAscissa = 0; /* assumerà il valore massimo delle ascisse fra tutti gli elementi della lista */
+    int condScelta = 0; /* conterrà la risposta alla domanda: 'Scrivere o Leggere da file' */
+    int condLoop = 1; /* condizione di ciclo */
 
     printf("\n\tInserisci nome file: ");
     scanf(" %s" , nomeFile);
 
-    buildFromFile(&lista , nomeFile);
+    while (condLoop == 1){
+        printf("\n\tVuoi leggere, scrivere sul file, stampare la lista oppure uscire dal programma (0 , 1 , 2 , 3) ? \n\t->  ");
+        scanf("%d" , &condScelta);
 
-    stampaLista(lista);
+        switch (condScelta) {
+            case 0:
+                buildFromFile(&lista, nomeFile);
+                maxAscissa(lista , &puntoMaxAscissa);
+                printf("\n\tIl valore maggiore delle x e' : %d\n" , puntoMaxAscissa);
+                break;
+            case 1:
+                addNodo(&lista);
+                scriviOnFile(lista, nomeFile);
+                break;
+            case 2:
+                printf("\n\tStampa lista in corso: ");
+                stampaLista(lista);
+                break;
+            case 3:
+                condLoop = 0;
+                break;
+            default:
+                printf("\n\t ~~~ Devi aver sbagliato a scrivere!\n");
+                condLoop = 1;
+        }
+    }
+
 } /* fine funzione main */
 
 
 
 void addElemToLista(TipoLista *lista , TipoElem elem) {
 
-    TipoNodo *last = NULL;
-    TipoNodo *newnode = malloc(sizeof(TipoNodo));
+    TipoNodo *last;
+    TipoNodo *newnode = NULL;
+    newnode = malloc(sizeof(TipoNodo));
+
     if (!newnode) { printf("\n\tErrore allocazione memoria\n"); exit(-1); }
+
     newnode->info = elem;
     newnode->next = NULL;
 
@@ -52,8 +83,7 @@ void addElemToLista(TipoLista *lista , TipoElem elem) {
     }
     else { 
         last = *lista;
-
-        while (last != NULL) {
+        while (last->next != NULL) {
             last = last->next;
         }
         
@@ -62,6 +92,35 @@ void addElemToLista(TipoLista *lista , TipoElem elem) {
 
 }
 
+void addNodo(TipoLista *lista) {
+    TipoNodo *last;
+    TipoNodo *newnode = NULL;
+    newnode = malloc(sizeof(TipoNodo));
+    
+
+    char colore[15];
+    int x = 0 , y = 0;
+
+    if (!newnode) { printf("\n\t ~~ Errore allocazione memoria ~~\n"); exit(-1); }
+    printf("\n\tInserisci colore x y  -> ");
+    scanf(" %s %d %d" , colore , &x , &y);
+    
+    strcpy(newnode->info.colore , colore);
+    newnode->info.valX = x;
+    newnode->info.valY = y;
+    newnode->next = NULL;
+    if (!(*lista)) { *lista = newnode; }
+    else {
+        last = *lista;
+        while (last->next != NULL) {
+            last = last->next;
+        }
+        last->next = newnode;
+    }
+}
+
+
+/* LETTURA DA FILE */
 void readFromFile(FILE * filetemp, TipoElem *elem) {
 
     fscanf(filetemp, "%d %d %s\n", &(elem->valX) , &(elem->valY) , elem->colore ); 
@@ -84,7 +143,11 @@ void buildFromFile(TipoLista *lista , char *nomefile) {
         addElemToLista(lista , elem);
     }
 
+    fclose(fin);
 }
+/* FINE LETTURA DA FILE */
+
+
 void stampaElem(TipoElem elem) {
     printf("%s , ( %d,%d ) \n" , elem.colore , elem.valX , elem.valY);
 }
@@ -100,8 +163,44 @@ void stampaLista(TipoLista lista) {
     }
 }
 
-void maxAscissa(TipoLista lista) {
+void maxAscissa(TipoLista lista , int *val) {
     /* trova il valore massimo della x fra tutta la lista */
+    TipoNodo *node = lista;
+    int max = 0 , count = 0 ;
+
+    if (!lista) {
+        printf("\n\t ~~~ La lista è vuota ~~~");
+    }
+    else {
+        while (node) {
+            if (node->info.valX > max) { max = node->info.valX; } 
+            node = node->next;
+        }
+    }
+    *val = max;
 }
 
+
+void scriviOnFile(TipoLista lista , char *nomefile) {
+    FILE *fout;
+    fout = fopen(nomefile , "w");
+    TipoNodo *node = lista;
+    TipoElem elem;
+
+    if (!fout) {
+        printf("\n\t ~~~ Non è stato possibile aprire il file ~~~\n");
+        exit(-1);
+    }
+    
+    while (node) { /* finché continuano ad esserci dei nodi all'interno della lista */
+        strcpy(elem.colore , node->info.colore);
+        elem.valX = node->info.valX;
+        elem.valY = node->info.valY;
+        fprintf(fout , "%d %d %s\n" , elem.valX , elem.valY , elem.colore);
+        
+        node = node->next;
+    }
+
+    fclose(fout);
+} /* fine funzione */
 

@@ -1,1 +1,3 @@
-5 10 'blu'
+12 3 rosso
+15 2 blu
+2 23 giallo
