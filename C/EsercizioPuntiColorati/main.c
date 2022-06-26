@@ -22,16 +22,20 @@ void readFromFile(FILE * , TipoElem *); /* prende gli elementi dal file e li tra
 void addElemToLista(TipoLista * , TipoElem); /* aggiunge gli elementi alla lista */
 void scriviOnFile(TipoLista , char *); /* consente di scrivere sul file tutti gli elementi presenti in lista */
 void addNodo(TipoLista *); /* aggiunge un nodo, consenste di fare un test di scrittura */
+void eliminaPuntoValMax(TipoLista * , int); /* elimina i nodi che contengono il valore massimo dell'ascisse */
 
 int main() {
     /* ~~ TipoLista || TipoNodo * ~~ */
     TipoLista lista = NULL;
-    /* ~~ string || char * ~~ */
+    /* ~~ string || char * || char ~~ */
     char nomeFile[30];
+    char condProc = ' '; /* condProceed || opzione di scelta per proseguire con eliminazione o meno */
+    char condYes = 's';
     /* int */
     int puntoMaxAscissa = 0; /* assumerà il valore massimo delle ascisse fra tutti gli elementi della lista */
     int condScelta = 0; /* conterrà la risposta alla domanda: 'Scrivere o Leggere da file' */
     int condLoop = 1; /* condizione di ciclo */
+    int condSave = 0; /* condizione per decidere che informazione salvare sul file */
 
     printf("\n\tInserisci nome file: ");
     scanf(" %s" , nomeFile);
@@ -42,12 +46,29 @@ int main() {
 
         switch (condScelta) {
             case 0:
+
                 buildFromFile(&lista, nomeFile);
                 maxAscissa(lista , &puntoMaxAscissa);
                 printf("\n\tIl valore maggiore delle x e' : %d\n" , puntoMaxAscissa);
+
+                printf("\n\tVuoi procedere con l'eliminazione dei punti con questo valore [s/n]?  ->  ");
+                scanf(" %c" , &condProc);
+
+                if ( strcmp(&condProc , &condYes) ) {
+                    eliminaPuntoValMax(&lista, puntoMaxAscissa);
+                }
+                else { 
+                    printf("\n\tRicevuto!\n");
+                }
+
                 break;
             case 1:
-                addNodo(&lista);
+                condSave = 0;
+                printf("\n\tVuoi salvare la lista attuale o un nuovo nodo [0,1] ? ->  ");
+                scanf("%d" , &condSave);
+                if ( condSave == 1 ) {
+                    addNodo(&lista);
+                }
                 scriviOnFile(lista, nomeFile);
                 break;
             case 2:
@@ -91,6 +112,30 @@ void addElemToLista(TipoLista *lista , TipoElem elem) {
     }
 
 }
+
+
+void eliminaPuntoValMax(TipoLista *lista , int valmax) {
+    TipoNodo *prec = malloc(sizeof(TipoNodo));
+    TipoNodo *corr;
+    int nodeval = 0;
+
+    prec->next = *lista; /* dopo *prec arriverà il primo elemento della lista */
+    *lista = prec; /* prec diviene ora il primo elemento */
+    corr = prec->next; /* corr punta al secondo elemento della lista (escluso prec) */
+
+    while (corr) {
+        nodeval = corr->info.valX;
+        if (nodeval == valmax) { prec->next = corr->next; free(corr); }
+        else { prec = prec->next; }
+        corr = prec->next;
+    }
+
+    prec = *lista;
+    *lista = prec->next;
+    free(prec);
+
+}
+
 
 void addNodo(TipoLista *lista) {
     TipoNodo *last;

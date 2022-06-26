@@ -1,3 +1,6 @@
+17 8 blu
+17 12 verde
 12 3 rosso
-15 2 blu
+17 10 blu
 2 23 giallo
+
